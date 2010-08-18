@@ -20,7 +20,31 @@ Licensed under LGPL3.
 
  - Everything else, including galleries and all of the methods that require authentication.
 
-## How To Use
+## TODO
+ 
+ - Cleanup
+   - Error handling is haphazard and inconsistnent.
+     - Docblock comments no longer match reality
+     - Maybe Imgur_Error should be an Exception?
+   - Having the Upload class suddenly turn in to an Image feels kind of funky.
+     - Turn Upload into a static class?
+     - Return an Imgur_Image?
+ - More completeness, in order of priority and likelyhood to get completed:
+   - /account/images
+     - Seems to accept a POST.  Does this work like /upload?  Need to check.
+   - /account/images/:HASH
+     - Does this work like /image?  Sure seems like it.  Accepts a DELETE method.
+   - /account/images_count
+   - /account
+   - /account/albums
+   - /account/albums/:ID
+   - /account/albums_count
+   - /account/albums_order
+   - /account/albums_order/:ID
+   - /gallery
+   - /stats
+ 
+## Quick HOWTO
 
     // It includes a SPL autoloader, just in case your project doesn't already
     // follow the normal underscores-as-directory-separators pattern.
@@ -52,3 +76,4 @@ Licensed under LGPL3.
 It's worth noting that the Imgur_Upload class inherits from Imgur_Image, meaning
 that you can call the delete method directly from the uploaded instance.  This is,
 of course, insane.
+
