@@ -8,7 +8,7 @@
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  **/
 
-class Imgur_Upload {
+class Imgur_Upload extends Imgur_Image {
 
 /** @var string The name of the file.*/
     public $name;
@@ -16,36 +16,14 @@ class Imgur_Upload {
     public $title;
 /** @var string The caption of the image, in order to supply even more context. This shows up on the Imgur website. */
     public $caption;
-/** @var string The hash of the image, as used in URLs.  Provided by Imgur */
-    public $hash;
-/** @var string The delete hash, used by delete an image.  Provided by Imgur */
-    public $deletehash;
-/** @var DateTime Creation date & time.  Provided by Imgur */
-    public $datetime;
-/** @var string The MIME type of the image.  Provided by Imgur */
-    public $type;
-/** @var bool Is this an animated image?  Provided by Imgur. */
-    public $animated;
-/** @var int Width of the image, in pixels.  Provided by Imgur. */
-    public $width;
-/** @var int Height of the image, in pixels.  Provided by Imgur. */
-    public $height;
-/** @var int Size of the image, in bytes.  Provided by Imgur. */
-    public $size;
-/** @var int Number of image views.  Provided by Imgur. */
-    public $views;
-/** @var int Bandwidth use of this image, in bytes?  Provided by Imgur. */
-    public $bandwidth;
-/** @var string URL to the image on Imgur. */
-    public $link_original;
-/** @var string URL to the page for the image on Imgur. */
-    public $link_imgur_page;
-/** @var string URL to the delete page for this image on Imgur. */
-    public $link_delete_page;
-/** @var string URL to the small square thumbnail for this image on Imgur. */
-    public $link_small_square;
-/** @var string URL to the large thumbnail for this image on Imgur. */
-    public $link_large_thumbnail;
+/** @var bool Successfully uploaded? */
+    protected $uploaded = false;
+
+/**
+ * Constructor.  Removes the auto-fetching behavior of the Image base class.
+ * @return Imgur_Upload
+ **/
+    public function __construct($hash = '') {}
 
 
 /**
@@ -53,7 +31,7 @@ class Imgur_Upload {
  * @param array $json JSON data
  * @return Imgur_Upload
  **/
-    public function importFromJSON($json) {
+    public function importUploadFromJSON($json) {
         foreach($json['upload']['image'] as $k => $v)
             if(property_exists($this, $k))
                 $this->$k = $v;
@@ -63,6 +41,7 @@ class Imgur_Upload {
             if(property_exists($this, $urlk))
                 $this->$urlk = $v;
         }
+        $this->uploaded = true;
         return $this;
     }
 
@@ -73,9 +52,11 @@ class Imgur_Upload {
  * @return mixed Imgur_Error object, or a status integer
  **/
     public function uploadImageFromDisk($filename) {
+        if($this->uploaded)
+            return new Imgur_Error(array('error'=>array('message'=>'You already uploaded an image using this object.')));
         $json = $this->uploadImage(base64_encode(file_get_contents($filename)));
         if(is_array($json) && array_key_exists('upload', $json))
-            return $this->importFromJSON($json);
+            return $this->importUploadFromJSON($json);
         return new Imgur_Error($json);
     }
 
@@ -86,9 +67,11 @@ class Imgur_Upload {
  * @return mixed Imgur_Error object, or a status integer
  **/
     public function uploadImageFromString($file) {
+        if($this->uploaded)
+            return new Imgur_Error(array('error'=>array('message'=>'You already uploaded an image using this object.')));
         $json = $this->uploadImage(base64_encode($file));
         if(is_array($json) && array_key_exists('upload', $json))
-            return $this->importFromJSON($json);
+            return $this->importUploadFromJSON($json);
         return new Imgur_Error($json);
     }
 
@@ -99,9 +82,11 @@ class Imgur_Upload {
  * @return mixed Imgur_Error object, or a status integer
  **/
     public function uploadImageFromURL($url) {
+        if($this->uploaded)
+            return new Imgur_Error(array('error'=>array('message'=>'You already uploaded an image using this object.')));
         $json = $this->uploadImage($url, 'url');
         if(is_array($json) && array_key_exists('upload', $json))
-            return $this->importFromJSON($json);
+            return $this->importUploadFromJSON($json);
         return new Imgur_Error($json);
     }
 
