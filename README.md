@@ -50,6 +50,8 @@ Licensed under LGPL3.
     // follow the normal underscores-as-directory-separators pattern.
         include 'Imgur.php';
         Imgur::registerSPLAutoloader();
+    // Get your API key from <http://imgur.com/register/api_anon>
+        Imgur::$key = '...';
     // Let's upload a file.
         $upload = new Imgur_Upload();
         $upload->name = 'The Filename Imgur Sees Uploaded.png'; // Optional.
