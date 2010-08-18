@@ -1,11 +1,13 @@
-=Imgur API for PHP=
+# Imgur API for PHP
 
-==Requirements==
+Licensed under LGPL3.
+
+## Requirements
 
  - PHP 5.2 or better
  - allow_url_fopen enabled
 
-==What Works==
+## What Works
 
  - /upload: Upload an image
    - From a file on disk (via filename)
@@ -14,11 +16,11 @@
  - /image: Fetch information about an image
  - /delete: Delete an image
 
-==What Doesn't Work Yet==
+## What Doesn't Work Yet
 
  - Everything else, including galleries and all of the methods that require authentication.
 
-==How To Use==
+## How To Use
 
     include 'Imgur.php';
     $upload = new Imgur_Upload();
