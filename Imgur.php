@@ -26,7 +26,7 @@ class Imgur {
  * being used by our calling code doesn't follow the expected rules.
  **/
     public static function registerSPLAutoloader() {
-        spl_autoload_register(array('Imgur', array('Imgur', 'autoloader')));
+        spl_autoload_register(array('Imgur', 'autoloader'));
     }
 
 
@@ -52,13 +52,17 @@ class Imgur {
  * @return string Returned data
  **/
     public static function sendPOST($url, $data = array()) {
-        $data['key'] = Imgur::$key;
+        $data['key']            = Imgur::$key;
+        $data['_fake_statuses'] = 'true';
+        $data['_format']        = 'json';
+        $data = http_build_query($data);
         $stream = stream_context_create(array(
             'http' => array(
                 'method' => 'POST',
                 'user_agent' => sprintf(Imgur::$user_agent, Imgur::$key),
-                'header' => 'Content-type: application/www-form-urlencoded',
-                'content' => http_build_query($data)
+                'header' => 'Content-type: application/x-www-form-urlencoded',
+                'content' => $data,
+                'ignore_errors' => true
             )
         ));
         return file_get_contents($url, false, $stream);
@@ -72,21 +76,25 @@ class Imgur {
  * @return string Returned data
  **/
     public static function sendGET($url, $data = array()) {
-        $data['key'] = Imgur::$key;
+        $data['key']            = Imgur::$key;
+        $data['_fake_statuses'] = 'true';
+        $data['_format']        = 'json';
+    // Let's splice in our data with any query string that might be present.
         $kaboom = parse_url($url);
         $qs = array();
         if(array_key_exists('query', $kaboom))
             parse_str($kaboom['query'], $qs);
         $kaboom['query'] = http_build_query($qs + $data);
-        $url = ''; // <--- REASSEMBLE.
+        $url = $kaboom['scheme'] . '://' . $kaboom['host'] . $kaboom['path'] . '?' . $kaboom['query'];
+    // Now, where were we?
         $stream = stream_context_create(array(
             'http' => array(
                 'method' => 'GET',
-                'user_agent' => sprintf(Imgur::$user_agent, Imgur::$key)
+                'user_agent' => sprintf(Imgur::$user_agent, Imgur::$key),
+                'ignore_errors' => true
             )
         ));
         return file_get_contents($url, false, $stream);
     }
-
 
 }

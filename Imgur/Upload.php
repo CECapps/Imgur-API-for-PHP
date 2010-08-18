@@ -1,6 +1,7 @@
 <?php
 /**
  * PHP Interface to v2 of the Imgur API
+ * Upload container, representing both pending and successful uploads.
  * 
  * @author "McGlockenshire"
  * @link http://github.com/McGlockenshire/Imgur-API-for-PHP
@@ -48,13 +49,32 @@ class Imgur_Upload {
 
 
 /**
+ * Import bits and pieces from the expects JSON
+ * @param array $json JSON data
+ * @return Imgur_Upload
+ **/
+    public function importFromJSON($json) {
+        foreach($json['upload']['image'] as $k => $v)
+            if(property_exists($this, $k))
+                $this->$k = $v;
+        $this->datetime = new DateTime($this->datetime);
+        foreach($json['upload']['links'] as $k => $v) {
+            $urlk = 'link_' . $k;
+            if(property_exists($this, $urlk))
+                $this->$urlk = $v;
+        }
+        return $this;
+    }
+
+
+/**
  * Upload an image using a file on disk as the resource.
  * @param string $filename
  * @return mixed Imgur_Error object, or a status integer
  **/
     public function uploadImageFromDisk($filename) {
         $json = $this->uploadImage(base64_encode(file_get_contents($filename)));
-        if(array_key_exists('upload', $json))
+        if(is_array($json) && array_key_exists('upload', $json))
             return $this->importFromJSON($json);
         return new Imgur_Error($json);
     }
@@ -67,7 +87,7 @@ class Imgur_Upload {
  **/
     public function uploadImageFromString($file) {
         $json = $this->uploadImage(base64_encode($file));
-        if(array_key_exists('upload', $json))
+        if(is_array($json) && array_key_exists('upload', $json))
             return $this->importFromJSON($json);
         return new Imgur_Error($json);
     }
@@ -80,7 +100,7 @@ class Imgur_Upload {
  **/
     public function uploadImageFromURL($url) {
         $json = $this->uploadImage($url, 'url');
-        if(array_key_exists('upload', $json))
+        if(is_array($json) && array_key_exists('upload', $json))
             return $this->importFromJSON($json);
         return new Imgur_Error($json);
     }
@@ -93,8 +113,8 @@ class Imgur_Upload {
  * @return array JSON
  **/
     protected function uploadImage($data, $type = 'base64') {
-        return json_decode(Imgur::sendPOST(
-            Imgur::$api_url . '/upload.json',
+        $post = Imgur::sendPOST(
+            Imgur::$api_url . '/upload',
             array(
                 'image' => $data,
                 'type' => $type,
@@ -102,7 +122,9 @@ class Imgur_Upload {
                 'title' => $this->title,
                 'caption' => $this->caption
             )
-        ), true);
+        );
+        $json = json_decode($post, true);
+        return $json;
     }
 
 }
