@@ -54,17 +54,26 @@ class Imgur_Image {
 
 /**
  * Do that whole fetching thing.
- * @return mixed Imgur_Image or Imgur_Error, depending on whether or not it worked.
+ * @return Imgur_Image or throws an exception on failure.
  **/
     public function load($hash) {
         $json = json_decode(Imgur::sendGET(Imgur::$api_url . '/image/' . $hash), true);
-        if(!is_array($json) || !array_key_exists('image', $json))
-            return new Imgur_Error($json);
-        foreach($json['image']['image'] as $k => $v)
+        Imgur::checkError($json);
+        return $this->loadFromJSON($json['image']);
+    }
+
+
+/**
+ * Load data from returned JSON
+ * @param array $json
+ * @return Imgur_Image
+ **/
+    public function loadFromJSON($json) {
+        foreach($json['image'] as $k => $v)
             if(property_exists($this, $k))
                 $this->$k = $v;
         $this->datetime = new DateTime($this->datetime);
-        foreach($json['image']['links'] as $k => $v) {
+        foreach($json['links'] as $k => $v) {
             $urlk = 'link_' . $k;
             if(property_exists($this, $urlk))
                 $this->$urlk = $v;
@@ -75,7 +84,7 @@ class Imgur_Image {
 
 /**
  * Nuke it from orbit.  It's the only way to be sure.
- * @return mixed The message from the delete ("Success"), an Imgur_Error if they broke, or false if you broke it.
+ * @return bool Or throws an exception on failure.
  **/
     public function delete() {
         if(!$this->deletehash)
@@ -84,9 +93,8 @@ class Imgur_Image {
             Imgur::$api_url . '/delete/' . $this->deletehash,
             array( '_method' => 'delete' ) // Because I don't want to futz with another stream wrapper.
         ), true);
-        if(!is_array($json) || !array_key_exists('delete', $json))
-            return new Imgur_Error($json);
-        return $json['delete']['message'];
+        Imgur::checkError($json);
+        return $json['delete']['message'] == 'Success';
     }
 
 }

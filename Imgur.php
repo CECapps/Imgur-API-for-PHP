@@ -46,6 +46,20 @@ class Imgur {
 
 
 /**
+ * Check a JSON array for invalidness.
+ * @param array $json
+ * @return bool
+ **/
+    public static function checkError($json) {
+        if(!is_array($json))
+            throw new Imgur_Exception("No data was returned.");
+        if(array_key_exists('error', $json))
+            throw new Imgur_Exception($json['error']['message']);
+        return true;
+    }
+
+
+/**
  * Create a POST to the specified URL.
  * @param string $url
  * @param array $data POST data

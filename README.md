@@ -22,13 +22,6 @@ Licensed under LGPL3.
 
 ## TODO
  
- - Cleanup
-   - Error handling is haphazard and inconsistnent.
-     - Docblock comments no longer match reality
-     - Maybe Imgur_Error should be an Exception?
-   - Having the Upload class suddenly turn in to an Image feels kind of funky.
-     - Turn Upload into a static class?
-     - Return an Imgur_Image?
  - More completeness, in order of priority and likelyhood to get completed:
    - /account/images
      - Seems to accept a POST.  Does this work like /upload?  Need to check.
@@ -57,25 +50,22 @@ Licensed under LGPL3.
         $upload->name = 'The Filename Imgur Sees Uploaded.png'; // Optional.
         $upload->title = 'A Short Descriptive Title, Optional';
         $upload->caption = 'A longer bit of descriptive text.  Also optional.';
-        $result = $upload->uploadImageFromDisk('foo.png');
-    // Or ...
-        $result = $upload->uploadImageFromString($data);
-    // Or ...
-        $result = $upload->uploadImageFromURL($url);
-        if($result instanceof Imgur_Error)
-            echo "OH NOES IT BROKE!  {$result->message}\n";
-        else
-            echo "It worked!  Yay!  The image is here: {$upload->link_imgur_page}\n";
+        try {
+            /** @var Imgur_Image */
+            $image = $upload->uploadImageFromDisk('foo.png');
+        // Or ...
+            $image = $upload->uploadImageFromString($data);
+        // Or ...
+            $image = $upload->uploadImageFromURL($url);
+        } catch(Imgur_Exception $e) {
+            echo "It totally busted: ", $e->getMessage();
+            exit;
+        }
+        echo "It worked!  Yay!  The image is here: {$$image->link_imgur_page}\n";
 
     // Can we pull down the image info again?
-        $img = new Imgur_Image($upload->hash);
-        echo "Image successfully loaded: {$img->hash}\n";
-    // Now, can we delete the image?  Because we're anonymous, only the uploader
-    // actually has the delete hash, but because this is demo code...
-        $img->deletehash = $upload->deletehash();
-        echo "Image deleted?  " . $img->delete() . "\n";
-
-It's worth noting that the Imgur_Upload class inherits from Imgur_Image, meaning
-that you can call the delete method directly from the uploaded instance.  This is,
-of course, insane.
-
+        $same_image = new Imgur_Image($image->hash);
+        echo "Image successfully loaded: {$same->hash} == {$image->hash}\n";
+    // Now, can we delete the image?  Because we're anonymous, only the image that
+    // was returned by the uploader has the delete hash/
+        echo "Image deleted?  " . var_export($image->delete(), true) . "\n";
