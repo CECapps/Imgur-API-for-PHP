@@ -11,7 +11,7 @@ class Imgur {
 
     public static $key;
     
-    public static $user_agent = 'ImgurAPI-PHP/1.0 (http://github.com/McGlockenshire/Imgur-API-for-PHP; key=%s)';
+    public static $user_agent = 'ImgurAPI-PHP/1.1 (http://github.com/McGlockenshire/Imgur-API-for-PHP; key=%s)';
 
     public static $api_url = 'http://api.imgur.com/2';
 
@@ -67,7 +67,7 @@ class Imgur {
  **/
     public static function sendPOST($url, $data = array()) {
         $data['key']            = Imgur::$key;
-        $data['_fake_statuses'] = 'true';
+        $data['_fake_status']   = '200';
         $data['_format']        = 'json';
         $data = http_build_query($data);
         $stream = stream_context_create(array(
@@ -91,7 +91,7 @@ class Imgur {
  **/
     public static function sendGET($url, $data = array()) {
         $data['key']            = Imgur::$key;
-        $data['_fake_statuses'] = 'true';
+        $data['_fake_status']   = '200';
         $data['_format']        = 'json';
     // Let's splice in our data with any query string that might be present.
         $kaboom = parse_url($url);
