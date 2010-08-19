@@ -55,6 +55,7 @@ class Imgur {
             throw new Imgur_Exception("No data was returned.");
         if(array_key_exists('error', $json))
             throw new Imgur_Exception($json['error']['message']);
+        # @TODO: Deal with HTTP errors here, if we can?
         return true;
     }
 

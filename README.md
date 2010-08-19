@@ -18,7 +18,7 @@ Licensed under LGPL3.
 
 ## What Doesn't Work Yet
 
- - Everything else, including galleries and all of the methods that require authentication.
+ - Everything else.
 
 ## TODO
  
