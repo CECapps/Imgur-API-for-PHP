@@ -67,5 +67,5 @@ Licensed under LGPL3.
         $same_image = new Imgur_Image($image->hash);
         echo "Image successfully loaded: {$same->hash} == {$image->hash}\n";
     // Now, can we delete the image?  Because we're anonymous, only the image that
-    // was returned by the uploader has the delete hash/
+    // was returned by the uploader has the delete hash
         echo "Image deleted?  " . var_export($image->delete(), true) . "\n";
