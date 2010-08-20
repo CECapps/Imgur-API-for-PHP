@@ -31,7 +31,7 @@ class Imgur_Account {
     public function load() {
         if(!Imgur::$has_oauth)
             throw new Imgur_Exception("Can't load an Account without setting an authorized OAuth adapter.");
-        $json = Imgur::sendGET(Imgur::$api_url . '/account');
+        $json = json_decode(Imgur::sendGET(Imgur::$api_url . '/account'), true);
         Imgur::checkError($json);
         if(array_key_exists('account', $json))
             foreach($json['account'] as $k => $v)

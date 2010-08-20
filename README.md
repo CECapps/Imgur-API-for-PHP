@@ -11,8 +11,8 @@ Licensed under LGPL3.
 
 One of:
 
- - HTTP_OAuth (PEAR, tested with 0.1.7)
- - Zend_Oauth (Zend Framework, tested with 1.10)
+ - HTTP_OAuth (PEAR, tested with 0.1.7 -- **BROKEN**)
+ - Zend_Oauth (Zend Framework, tested with 1.10 -- **WORKS**)
 
 Support for the OAuth PECL extension will come soon.
 
@@ -23,8 +23,10 @@ Support for the OAuth PECL extension will come soon.
 
 ## Recent Changes
 
- - Added **UNTESTED** OAuth support.  It's probably completely broken.
- - Added Account class to work with OAuth support.  Also **UNTESTED**.
+ - Added **EXPERIMENTAL** OAuth support.  Zend's OAuth implementation has been 
+   tested and works.  PEAR's HTTP_OAuth is giving me some weird gzip errors 
+   and is not fully tested.
+ - Added Account class to work with OAuth support.
  - Added HTTP adapters for OAuth support.
  - Added "demos" directory with small demo applications.
    - "httpadapters" demo contains a quick overview of how to upload a file and
@@ -66,6 +68,7 @@ Support for the OAuth PECL extension will come soon.
  
 ## Quick HOWTO
 
-    See demos/httpadapters.php for a quick usage demonstration.
+ - See demos/httpadapters.php for a quick usage demonstration.
+ - See demos/oauth.php for an OAuth demonstration.  Only the Zend Framework
+   interface has been tested.
 
-    See demos/oauth.php for an **UNTESTED** OAuth demonstration.
