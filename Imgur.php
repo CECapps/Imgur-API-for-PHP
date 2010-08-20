@@ -15,10 +15,17 @@ class Imgur {
 
     public static $api_url = 'http://api.imgur.com/2';
 
+    public static $oauth1a_base_url             = 'https://api.imgur.com/oauth';
+    public static $oauth1a_request_token_url    = 'https://api.imgur.com/oauth/request_token';
+    public static $oauth1a_authorize_url        = 'https://api.imgur.com/oauth/authorize';
+    public static $oauth1a_access_token_url     = 'https://api.imgur.com/oauth/access_token';
+
     public static $http_adapter_class = 'Imgur_HTTPAdapter_PHPStream';
 
     /** @var Imgur_HTTPAdapter */
     protected static $http_adapter;
+
+    public $has_oauth = false;
 
 /**
  * No constructor, this is a static class.
@@ -84,6 +91,26 @@ class Imgur {
         self::$http_adapter = $adapter;
     }
 
+
+/**
+ * Suck an HTTP adapter out of an OAuth instance
+ * @param object $oauth
+ **/
+    public static function setOAuth($oauth) {
+    // We support the following adapters officially:
+    // PEAR's HTTP_OAuth_Consumer
+    // Zend's Zend_Oauth_Token_Access (*NOT* a Zend_Oauth_Consumer!)
+    // The PECL extension "OAuth"
+        $adapter_class = '';
+        if(extension_loaded('oauth') && $oauth instanceof OAuth)
+            $adapter_class = 'PECLOAuth';
+        else
+            $$adapter_class = str_replace('_', '', get_class($oauth));
+        $adapter_class = 'Imgur_HTTPAdapter_OAuth_' . $adapter_class;
+        $adapter = $adapter_class::createByWrapping($oauth);
+        self::setHTTPAdapter($adapter);
+        self::$has_oauth = true;
+    }
 
 /**
  * Create a POST to the specified URL.

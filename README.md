@@ -7,18 +7,32 @@ Licensed under LGPL3.
  - PHP 5.2.10 or better
  - allow_url_fopen enabled
 
+### OAuth Requirements
+
+One of:
+
+ - HTTP_OAuth (PEAR, tested with 0.1.7)
+ - Zend_Oauth (Zend Framework, tested with 1.10)
+
+Support for the OAuth PECL extension will come soon.
+
 ### Optional Requirements
 
- - HTTP_Request2 (PEAR, tested with 0.5.2)
- - Zend_Http_Client (Zend Framework, tested with 1.10)
+ - HTTP_Request2 (PEAR, tested with 0.5.2; required for HTTP_OAuth)
+ - Zend_Http_Client (Zend Framework, tested with 1.10; required for Zend_Oauth)
 
 ## Recent Changes
 
- - Added HTTP adapters in preperation for OAuth support.
+ - Added **UNTESTED** OAuth support.  It's probably completely broken.
+ - Added Account class to work with OAuth support.  Also **UNTESTED**.
+ - Added HTTP adapters for OAuth support.
  - Added "demos" directory with small demo applications.
    - "httpadapters" demo contains a quick overview of how to upload a file and
      then fetch properties on it before deleting it, while also giving a very
      quick overview on how to use the HTTP adapters.
+   - "oauth" demo for OAuth support.  If you are going to use OAuth but don't
+     know how OAuth works, please read it.  If you do know how OAuth works,
+     please read it.  If you don't care, please read it.
  - 5.2.10 singled out as the minimum version, up from just 5.2.x
 
 ## What Works
@@ -42,7 +56,6 @@ Licensed under LGPL3.
    - /account/images/:HASH
      - Does this work like /image?  Sure seems like it.  Accepts a DELETE method.
    - /account/images_count
-   - /account
    - /account/albums
    - /account/albums/:ID
    - /account/albums_count
@@ -54,3 +67,5 @@ Licensed under LGPL3.
 ## Quick HOWTO
 
     See demos/httpadapters.php for a quick usage demonstration.
+
+    See demos/oauth.php for an **UNTESTED** OAuth demonstration.

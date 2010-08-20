@@ -34,7 +34,10 @@ class Imgur_HTTPAdapter_ZendHttpClient implements Imgur_HTTPAdapter {
  * @param Zend_Http_Client $object
  **/
     public function wrap($object) {
-        $this->instance = $object;
+        if($object instanceof Zend_Http_Client)
+            $this->instance = $object;
+        else
+            throw new Imgur_Exception("ZendHttpClient::wrap was not passed an object that could be worked with.");
     }
 
 /**

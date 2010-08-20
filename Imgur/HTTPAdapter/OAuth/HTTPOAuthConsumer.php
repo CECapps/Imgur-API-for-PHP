@@ -1,48 +1,47 @@
 <?php
 /**
  * PHP Interface to v2 of the Imgur API
- * HTTP Adapter Interface: PEAR's HTTP_Request2
+ * HTTP Adapter Interface: PEAR's HTTP_Request2 *VIA* PEAR's HTTP_OAuth
  * 
  * @author "McGlockenshire"
  * @link http://github.com/McGlockenshire/Imgur-API-for-PHP
  * @license http://www.gnu.org/licenses/lgpl-3.0.txt
  **/
 
-class Imgur_HTTPAdapter_PEARHTTPRequest2 implements Imgur_HTTPAdapter {
+class Imgur_HTTPAdapter_OAuth_HTTPOAuthConsumer implements Imgur_HTTPAdapter {
 
-    /** @var HTTP_Request2 */
+    /** @var HTTP_OAuth_Consumer_Request */
     protected $instance;
 
-    public function __construct() {
-        $this->instance = new HTTP_Request2();
-    }
+    public function __construct() {}
 
 /**
  * Create a new instance of the adapter by wrapping an existing object.
- * @param HTTP_Request2 $object
- * @return Imgur_HTTPAdapter_PEARHTTPRequest2
+ * @param HTTP_OAuth_Consumer $object
+ * @return Imgur_HTTPAdapter_OAuth_HTTPOAuthConsumer
  **/
     public static function createByWrapping($object) {
-        $foo = new Imgur_HTTPAdapter_PEARHTTPRequest2();
-        $foo->wrap($object);
+        $foo = new Imgur_HTTPAdapter_OAuth_HTTPOAuthConsumer();
+        $foo->wrap($object->getOAuthConsumerRequest());
         return $foo;
     }
 
 /**
  * Take a different copy of our desired object, post-creation.
- * @param HTTP_Request2 $object
+ * @param HTTP_OAuth_Consumer_Request $object
  **/
     public function wrap($object) {
-        if($object instanceof HTTP_Request2)
+        if($object instanceof HTTP_OAuth_Consumer)
+            $this->instance = $object->getOAuthConsumerRequest();
+        elseif($object instanceof HTTP_OAuth_Consumer_Request)
             $this->instance = $object;
         else
-            throw new Imgur_Exception("PEARHTTPRequest2::wrap was not passed an object that could be worked with.");
-
+            throw new Imgur_Exception("HTTPOAuthConsumer::wrap was not passed an object that could be worked with.");
     }
 
 /**
  * Return the HTTP request object that we're wrapping
- * @return HTTP_Request2
+ * @return HTTP_OAuth_Consumer_Request
  **/
     public function &unwrap() {
         return $this->instance;
