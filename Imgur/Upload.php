@@ -76,11 +76,11 @@ class Imgur_Upload {
         $post = Imgur::sendPOST(
             Imgur::$api_url . '/upload',
             array(
-                'image' => $data,
-                'type' => $type,
-                'name' => $this->name,
-                'title' => $this->title,
-                'caption' => $this->caption
+                'image'     => $data,
+                'type'      => $type,
+                'name'      => $this->name,
+                'title'     => $this->title,
+                'caption'   => $this->caption
             )
         );
         $json = json_decode($post, true);

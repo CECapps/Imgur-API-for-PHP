@@ -11,9 +11,14 @@ class Imgur {
 
     public static $key;
     
-    public static $user_agent = 'ImgurAPI-PHP/1.1 (http://github.com/McGlockenshire/Imgur-API-for-PHP; key=%s)';
+    public static $user_agent = 'ImgurAPI-PHP/1.2 (http://github.com/McGlockenshire/Imgur-API-for-PHP; key=%s)';
 
     public static $api_url = 'http://api.imgur.com/2';
+
+    public static $http_adapter_class = 'Imgur_HTTPAdapter_PHPStream';
+
+    /** @var Imgur_HTTPAdapter */
+    protected static $http_adapter;
 
 /**
  * No constructor, this is a static class.
@@ -61,26 +66,38 @@ class Imgur {
 
 
 /**
+ * Create/retrieve a copy of our favored HTTP adapter
+ * @return Imgur_HTTPAdapter
+ **/
+    public static function getHTTPAdapter($create = true) {
+        if(!isset(self::$http_adapter) && $create)
+            self::$http_adapter = new self::$http_adapter_class();
+        return self::$http_adapter;
+    }
+
+
+/**
+ * Set our favored HTTP adapter
+ * @param Imgur_HTTPAdapter $adapter
+ **/
+    public static function setHTTPAdapter(Imgur_HTTPAdapter $adapter) {
+        self::$http_adapter = $adapter;
+    }
+
+
+/**
  * Create a POST to the specified URL.
  * @param string $url
  * @param array $data POST data
  * @return string Returned data
  **/
     public static function sendPOST($url, $data = array()) {
-        $data['key']            = Imgur::$key;
-        $data['_fake_status']   = '200';
-        $data['_format']        = 'json';
-        $data = http_build_query($data);
-        $stream = stream_context_create(array(
-            'http' => array(
-                'method' => 'POST',
-                'user_agent' => sprintf(Imgur::$user_agent, Imgur::$key),
-                'header' => 'Content-type: application/x-www-form-urlencoded',
-                'content' => $data,
-                'ignore_errors' => true
-            )
-        ));
-        return file_get_contents($url, false, $stream);
+        $data['key']        = Imgur::$key;
+        $data['_format']    = 'json';
+        $http = self::getHTTPAdapter();
+        $res = $http->sendPOST($url, $data);
+        #print_r($res);
+        return $res;
     }
 
 
@@ -91,25 +108,12 @@ class Imgur {
  * @return string Returned data
  **/
     public static function sendGET($url, $data = array()) {
-        $data['key']            = Imgur::$key;
-        $data['_fake_status']   = '200';
-        $data['_format']        = 'json';
-    // Let's splice in our data with any query string that might be present.
-        $kaboom = parse_url($url);
-        $qs = array();
-        if(array_key_exists('query', $kaboom))
-            parse_str($kaboom['query'], $qs);
-        $kaboom['query'] = http_build_query($qs + $data);
-        $url = $kaboom['scheme'] . '://' . $kaboom['host'] . $kaboom['path'] . '?' . $kaboom['query'];
-    // Now, where were we?
-        $stream = stream_context_create(array(
-            'http' => array(
-                'method' => 'GET',
-                'user_agent' => sprintf(Imgur::$user_agent, Imgur::$key),
-                'ignore_errors' => true
-            )
-        ));
-        return file_get_contents($url, false, $stream);
+        $data['key']        = Imgur::$key;
+        $data['_format']    = 'json';
+        $http = self::getHTTPAdapter();
+        $res = $http->sendGET($url, $data);
+        #print_r($res);
+        return $res;
     }
 
 }

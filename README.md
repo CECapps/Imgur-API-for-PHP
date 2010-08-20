@@ -4,8 +4,22 @@ Licensed under LGPL3.
 
 ## Requirements
 
- - PHP 5.2 or better
+ - PHP 5.2.10 or better
  - allow_url_fopen enabled
+
+### Optional Requirements
+
+ - HTTP_Request2 (PEAR, tested with 0.5.2)
+ - Zend_Http_Client (Zend Framework, tested with 1.10)
+
+## Recent Changes
+
+ - Added HTTP adapters in preperation for OAuth support.
+ - Added "demos" directory with small demo applications.
+   - "httpadapters" demo contains a quick overview of how to upload a file and
+     then fetch properties on it before deleting it, while also giving a very
+     quick overview on how to use the HTTP adapters.
+ - 5.2.10 singled out as the minimum version, up from just 5.2.x
 
 ## What Works
 
@@ -39,33 +53,4 @@ Licensed under LGPL3.
  
 ## Quick HOWTO
 
-    // It includes a SPL autoloader, just in case your project doesn't already
-    // follow the normal underscores-as-directory-separators pattern.
-        include 'Imgur.php';
-        Imgur::registerSPLAutoloader();
-    // Get your API key from <http://imgur.com/register/api_anon>
-        Imgur::$key = '...';
-    // Let's upload a file.
-        $upload = new Imgur_Upload();
-        $upload->name = 'The Filename Imgur Sees Uploaded.png'; // Optional.
-        $upload->title = 'A Short Descriptive Title, Optional';
-        $upload->caption = 'A longer bit of descriptive text.  Also optional.';
-        try {
-            /** @var Imgur_Image */
-            $image = $upload->uploadImageFromDisk('foo.png');
-        // Or ...
-            $image = $upload->uploadImageFromString($data);
-        // Or ...
-            $image = $upload->uploadImageFromURL($url);
-        } catch(Imgur_Exception $e) {
-            echo "It totally busted: ", $e->getMessage();
-            exit;
-        }
-        echo "It worked!  Yay!  The image is here: {$$image->link_imgur_page}\n";
-
-    // Can we pull down the image info again?
-        $same_image = new Imgur_Image($image->hash);
-        echo "Image successfully loaded: {$same->hash} == {$image->hash}\n";
-    // Now, can we delete the image?  Because we're anonymous, only the image that
-    // was returned by the uploader has the delete hash
-        echo "Image deleted?  " . var_export($image->delete(), true) . "\n";
+    See demos/httpadapters.php for a quick usage demonstration.

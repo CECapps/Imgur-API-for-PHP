@@ -10,25 +10,25 @@
 
 class Imgur_Image {
 
-/** @var string The hash of the image, as used in URLs.  Provided by Imgur */
+/** @var string The hash of the image, as used in URLs. */
     public $hash;
-/** @var string The delete hash, used by delete an image.  Provided by Imgur */
+/** @var string The delete hash, used by delete an image. */
     public $deletehash;
-/** @var DateTime Creation date & time.  Provided by Imgur */
+/** @var DateTime Creation date & time. */
     public $datetime;
-/** @var string The MIME type of the image.  Provided by Imgur */
+/** @var string The MIME type of the image. */
     public $type;
-/** @var bool Is this an animated image?  Provided by Imgur. */
+/** @var bool Is this an animated image? */
     public $animated;
-/** @var int Width of the image, in pixels.  Provided by Imgur. */
+/** @var int Width of the image, in pixels. */
     public $width;
-/** @var int Height of the image, in pixels.  Provided by Imgur. */
+/** @var int Height of the image, in pixels. */
     public $height;
-/** @var int Size of the image, in bytes.  Provided by Imgur. */
+/** @var int Size of the image, in bytes. */
     public $size;
-/** @var int Number of image views.  Provided by Imgur. */
+/** @var int Number of image views. */
     public $views;
-/** @var int Bandwidth use of this image, in bytes?  Provided by Imgur. */
+/** @var int Bandwidth use of this image, in bytes? */
     public $bandwidth;
 /** @var string URL to the image on Imgur. */
     public $link_original;
