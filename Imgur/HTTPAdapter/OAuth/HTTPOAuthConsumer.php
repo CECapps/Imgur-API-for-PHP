@@ -22,7 +22,15 @@ class Imgur_HTTPAdapter_OAuth_HTTPOAuthConsumer implements Imgur_HTTPAdapter {
  **/
     public static function createByWrapping($object) {
         $foo = new Imgur_HTTPAdapter_OAuth_HTTPOAuthConsumer();
-        $foo->wrap($object->getOAuthConsumerRequest());
+        $consumer_request = clone $object->getOAuthConsumerRequest();
+    // Oh, what a mess.
+        $consumer_request->setSecrets($object->getSecrets());
+        $consumer_request->setParameters(array(
+            'oauth_consumer_key' => $object->getKey(),
+            'oauth_signature_method' => $object->getSignatureMethod(),
+            'oauth_token' => $object->getToken()
+        ));
+        $foo->wrap($consumer_request);
         return $foo;
     }
 

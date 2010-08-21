@@ -5,27 +5,31 @@ Licensed under LGPL3.
 ## Requirements
 
  - PHP 5.2.10 or better
- - allow_url_fopen enabled
 
-### OAuth Requirements
+In order to actually make HTTP requests, you must have one of the following
+options available to you:
 
-One of:
+ - allow_url_fopen enabled in php.ini
+ - Zend_Http_Client (Zend Framework, tested with 1.10; also required for Zend_Oauth)
+ - HTTP_Request2 (PEAR, tested with 0.5.2; also required for HTTP_OAuth)
 
- - HTTP_OAuth (PEAR, tested with 0.1.7 -- **BROKEN**)
- - Zend_Oauth (Zend Framework, tested with 1.10 -- **WORKS**)
+In order to make use of any API calls that require authentication, you must use
+a supported OAuth library:
 
-Support for the OAuth PECL extension will come soon.
-
-### Optional Requirements
-
- - HTTP_Request2 (PEAR, tested with 0.5.2; required for HTTP_OAuth)
- - Zend_Http_Client (Zend Framework, tested with 1.10; required for Zend_Oauth)
+ - Zend_Oauth (Zend Framework, tested with 1.10)
+ - HTTP_OAuth (PEAR, tested with 0.1.7 -- subtly broken, see Changes)
+ - OAuth PECL Extension support is planned for the near future
 
 ## Recent Changes
 
- - Added **EXPERIMENTAL** OAuth support.  Zend's OAuth implementation has been 
-   tested and works.  PEAR's HTTP_OAuth is giving me some weird gzip errors 
-   and is not fully tested.
+ - Added *basic* OAuth support:
+   - Zend's OAuth implementation has been tested and works.
+   - PEAR's HTTP_OAuth works, but has some gzip problems.  You may need to modify
+     pear/HTTP/Request2/Adapter/Socket.php; search for "deflate" and comment out
+     the line.  I'm trying to figure out whether it's a bug with the version I'm
+     using or a problem with the compression coming from Imgur.  Zend's OAuth
+     impl. is currently the preferred version.
+   - OAuth support is in, but the various Authenticated APIs have not yet been coded.
  - Added Account class to work with OAuth support.
  - Added HTTP adapters for OAuth support.
  - Added "demos" directory with small demo applications.
@@ -35,7 +39,6 @@ Support for the OAuth PECL extension will come soon.
    - "oauth" demo for OAuth support.  If you are going to use OAuth but don't
      know how OAuth works, please read it.  If you do know how OAuth works,
      please read it.  If you don't care, please read it.
- - 5.2.10 singled out as the minimum version, up from just 5.2.x
 
 ## What Works
 
@@ -69,6 +72,5 @@ Support for the OAuth PECL extension will come soon.
 ## Quick HOWTO
 
  - See demos/httpadapters.php for a quick usage demonstration.
- - See demos/oauth.php for an OAuth demonstration.  Only the Zend Framework
-   interface has been tested.
+ - See demos/oauth.php for an OAuth demonstration.
 
