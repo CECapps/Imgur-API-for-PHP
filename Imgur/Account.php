@@ -1,7 +1,7 @@
 <?php
 /**
  * PHP Interface to v2 of the Imgur API
- * Authorized User Account
+ * Authorized User Account & Utilities
  * 
  * @author "McGlockenshire"
  * @link http://github.com/McGlockenshire/Imgur-API-for-PHP
@@ -38,5 +38,22 @@ class Imgur_Account {
                 if(property_exists($this, $k))
                     $this->$k = $v;
     }
+
+
+/**
+ * Get the count of images in this account
+ * @return int
+ **/
+    public function getImageCount() {
+        return -1;
+    // This currently returns a 404.  Huh.
+        $data = Imgur::sendGET(Imgur::$api_url, '/account/images_count');
+        var_export($data);
+        $json = json_decode($data, true);
+        Imgur::checkError($json);
+        if(array_key_exists('images_count', $json))
+            return (int)$json['images_count']['count'];
+    }
+
 
 }

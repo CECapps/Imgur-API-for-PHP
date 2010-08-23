@@ -53,13 +53,27 @@ class Imgur_Image {
 
 
 /**
+ * Which URL shall we try to fetch this image from?
+ * @return string
+ **/
+    protected function getURL() {
+        return Imgur::$api_url . '/image';
+    }
+
+
+/**
  * Do that whole fetching thing.
  * @return Imgur_Image or throws an exception on failure.
  **/
     public function load($hash) {
-        $json = json_decode(Imgur::sendGET(Imgur::$api_url . '/image/' . $hash), true);
+        $json = json_decode(Imgur::sendGET($this->getURL() . '/' . $hash), true);
         Imgur::checkError($json);
-        return $this->loadFromJSON($json['image']);
+        $key = 'image';
+    // The /account/images endpoint returns 'images', while the
+    // regular /image endpoint returns 'image'
+        if(array_key_exists('images', $json))
+            $key = 'images';
+        return $this->loadFromJSON($json[$key]);
     }
 
 

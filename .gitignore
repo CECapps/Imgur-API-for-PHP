@@ -1,0 +1,6 @@
+# Never let the live oauth-config get pushed upstream.
+demos/oauth-config.php
+
+# Komodo IDE Project Files can be ignored as well.
+*.kpf
+

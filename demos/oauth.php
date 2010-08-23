@@ -54,8 +54,7 @@ different HTTP request implementations:
    horribly documented.  The second argument to fetch() is the POST data, but
    that fact isn't actually listed anywhere.  Sigh.
 
-So, PEAR's HTTP_OAuth and Zend's Zend_OAuth win.  We'll do those first, and
-worry about the PECL extension later.
+After working with the code, I personally *vastly* prefer Zend's implementation.
 
 Also, just in case you missed it:
 
@@ -66,174 +65,61 @@ Clear as mud?
 
 Good.
 
-This demo will try to work with all three supported OAuth implementations.
-It will actively print out the state of the world, and let the user know what
-is going on.  You *probably don't want to copy this code*, just use it as
-a quick OAuth primer.
-
-(Yes, doing all three inline, in the same code, is messy.  However, it lets
-you easily compare how all three work.  If you don't like how one works,
-you can switch to another, after all.)
+This demo will work with all three supported OAuth implementations.  You *probably
+don't want to copy this code*, just use it as a quick OAuth primer.
 
 */
 
-    include_once '../Imgur.php';
-    Imgur::registerSPLAutoloader();
+// Uncomment *ONE* of the following includes to try out each supported library.
+// Zend is the preferred library.  It's worth noting that you *CAN* switch
+// libraries at any time.  OAuth is a standard, and the keys & tokens are entirely
+// interchangable.
+    #require_once './oauth-pear.php';
+    require_once './oauth-zend.php';
+    #require_once './oauth-pecl.php';
 
-    define('OAUTH_LIB', 'PEAR');
-    #define('OAUTH_LIB', 'ZEND');
-    #define('OAUTH_LIB', 'PECL');
+// The demo can only run if 
+    if($_SESSION['oauth_state'] != 2)
+        die("You didn't properly get an OAuth verification.  Bad user, no cookie.");
 
-    define('CONSUMER_KEY', '');
-    define('CONSUMER_SECRET', '');
+// Let's start the demo by...
+    $account = new Imgur_Account();
+    echo "Here's your account info: <pre>";
+    print_r($account);
+    echo "</pre><hr>";
 
-    define('CALLBACK_URL', 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
+// Do we have images?
+    echo "You have ",
+         $account->getImageCount(),
+         " images in your account.  Let's fetch some of them:<hr>";
 
-    session_start();
-    #unset($_SESSION['oauth_state']);
-    if(!array_key_exists('oauth_state', $_SESSION)) {
-        unset($_SESSION['token']);
-        unset($_SESSION['token_secret']);
-        $_SESSION['oauth_state'] = 0;
-    } 
-
-    /** @var HTTP_OAuth_Consumer */
-    $oauth_pear = null;
-    /** @var Zend_Oauth_Consumer */
-    $oauth_zend = null;
-    $zend_oauth_config = array();
-    /** @var OAuth */
-    $oauth_pecl = null;
-    if(OAUTH_LIB == 'PEAR') {
-        include_once 'HTTP/OAuth.php';
-        include_once 'HTTP/OAuth/Consumer.php';
-        $oauth_pear = new HTTP_OAuth_Consumer(
-                        CONSUMER_KEY,
-                        CONSUMER_SECRET,
-                        (isset($_SESSION['token']) ? $_SESSION['token'] : null),
-                        (isset($_SESSION['token_secret']) ? $_SESSION['token_secret'] : null)
-                    );
-    }
-    if(OAUTH_LIB == 'ZEND') {
-        include_once 'Zend/Loader/Autoloader.php';
-        $throwaway = Zend_Loader_Autoloader::getInstance();
-        $zend_oauth_config = array(
-            'callbackUrl' => CALLBACK_URL,
-            'siteUrl' => Imgur::$oauth1a_base_url,
-            'consumerKey' => CONSUMER_KEY,
-            'consumerSecret' => CONSUMER_SECRET
+// It's worth pointing out an inconsistency here: You must call load after
+// creating *any* image list, because the ArrayObject constructor is funny.
+    $il = new Imgur_AccountImages();
+    $il->load();
+    if(!count($il))
+        echo "(Pretend there are images here; none were fetched.)";
+    foreach($il as $image) {
+        printf(
+            '<a href="%s">%s</a>, a %dx%d file uploaded on %s.  You own it because I can see the delete hash: %s<br>',
+            $image->link_imgur_page,
+            $image->hash,
+            $image->height,
+            $image->width,
+            $image->datetime->format('Y-m-d H:i:s'),
+            $image->deletehash
         );
-        $oauth_zend = new Zend_Oauth_Consumer($zend_oauth_config);
     }
-    if(OAUTH_LIB == 'PECL') {
-        $oauth_pecl = new OAuth(CONSUMER_KEY, CONSUMER_SECRET);
-    }
-
-// State = 0: The user has not attempted to request OAuth.
-    echo "Step 1: We've already registered with Imgur.  Our consumer key is: ", CONSUMER_KEY, "<br>";
-    if($_SESSION['oauth_state'] == 0) {
-        echo "Step 2: You have just made a request.  Awesome.<br>";
-        echo "Step 3: Let's ask the Provider for a token.<br>";
-        if(OAUTH_LIB == 'PEAR') {
-            try {
-                $oauth_pear->getRequestToken(Imgur::$oauth1a_request_token_url, CALLBACK_URL);
-            } catch(HTTP_OAuth_Consumer_Exception_InvalidResponse $e) {
-                echo $e->getMessage();
-                exit;
-            }
-            $_SESSION['token'] = $oauth_pear->getToken();
-            $_SESSION['token_secret'] = $oauth_pear->getTokenSecret();
-        }
-        if(OAUTH_LIB == 'ZEND') {
-            /** @var Zend_Oauth_Token_Request */
-            $request_token = $oauth_zend->getRequestToken();
-            #var_export($request_token);
-            $_SESSION['token'] = $request_token->getToken();
-            $_SESSION['token_secret'] = $request_token->getTokenSecret();
-        }
-        if(OAUTH_LIB == 'PECL') {
-            $request_token = $oauth_pecl->getRequestToken(Imgur::$oauth1a_request_token_url);
-            $_SESSION['token'] = $request_token['oauth_token'];
-            $_SESSION['token_secret'] = $request_token['oauth_secret'];
-        }
-        echo "Step 4: Your token is {$_SESSION['token']}.  Click the following link to pop over to Imgur and authorize the demo: ";
-    // You'll note that our URL is missing from this request.  This is because
-    // our Consumer Key & Consumer Secret are paired with one specific endpoint,
-    // which is then stored with the Provider.  They'll send the user back here.
-        echo '<a href="',
-             Imgur::$oauth1a_authorize_url,
-             '?oauth_token=',
-             urlencode($_SESSION['token']),
-             '">Clicky.</a>';
-        $_SESSION['oauth_state'] = 1;
-        exit;
-    }
-// State = 1: The user has just come back here from the Provider.
-    elseif($_SESSION['oauth_state'] == 1) {
-        echo "Step 5: You just authorized this demo for access.  Thanks!<br>";
-        echo "Step 6: You've been sent back here with token ", htmlspecialchars($_REQUEST['oauth_token']), "<br>";
-        echo "Step 7: Now I'll ask the Provider for access using the various tokens.<br>";
-        if(OAUTH_LIB == 'PEAR') {
-            $oauth_pear->getAccessToken(Imgur::$oauth1a_access_token_url, array_key_exists('oauth_verifier', $_REQUEST) ? $_REQUEST['oauth_verifier'] : null);
-        // Replace the user's request token with their access token.
-            $_SESSION['token'] = $oauth_pear->getToken();
-            $_SESSION['token_secret'] = $oauth_pear->getTokenSecret();
-        }
-        if(OAUTH_LIB == 'ZEND') {
-            /** @var Zend_Oauth_Token_Access */
-            $request_token = new Zend_Oauth_Token_Request();
-        // And this is why they have you serialize it in their example code.
-            $request_token->setToken($_SESSION['token']);
-            $request_token->setTokenSecret($_SESSION['token_secret']);
-        // Zend's impl will read the right things straight out of $_GET.
-            $access_token = $oauth_zend->getAccessToken($_GET, $request_token);
-        // Replace the user's request token with their access token.
-            $_SESSION['token'] = $access_token->getToken();
-            $_SESSION['token_secret'] = $access_token->getTokenSecret();
-        }
-        if(OAUTH_LIB == 'PECL') {
-            $oauth_pecl->setToken($_SESSION['token'], $_SESSION['token_secret']);
-        // If there's an oauth_verifier present in GET/POST, it will automatically be grabbed.
-            $access_token = $oauth_pecl->getAccessToken(Imgur::$oauth1a_access_token_url);
-        // Replace the user's request token with their access token.
-            $_SESSION['token'] = $access_token['oauth_token'];
-            $_SESSION['token_secret'] = $access_token['oauth_secret'];
-        }
-        echo "Step 8: Success!  Your final access token is {$_SESSION['token']}.  ";
-        echo "We can now proceed to step nine.  ";
-        echo '<a href="',
-             $_SERVER['PHP_SELF'],
-             '">Clicky.</a>';
-        $_SESSION['oauth_state'] = 2;
-        exit;
-    }
-    elseif($_SESSION['oauth_state'] == 2) {
-        echo "Step 9: You should have access with key {$_SESSION['token']}!  Here is your account info: <br><pre>";
-        if(OAUTH_LIB == 'PEAR') {
-        // The PEAR lib takes the user's tokens in the constructor.  We don't need to do anything.
-            Imgur::setOAuth($oauth_pear);
-        }
-        if(OAUTH_LIB == 'ZEND') {
-        // Once again, this is why they have you serialize it in their example code...
-            $access_token = new Zend_Oauth_Token_Access();
-            $access_token->setToken($_SESSION['token']);
-            $access_token->setTokenSecret($_SESSION['token_secret']);
-        // We can work with this, or we can call getHttpClient and use the ZendHttpClient wrapper.
-            Imgur::setOAuth($access_token->getHttpClient($zend_oauth_config));
-        }
-        if(OAUTH_LIB == 'PECL') {
-        // Second verse, same as the first.
-            $oauth_pecl->setToken($_SESSION['token'], $_SESSION['token_secret']);
-        // And, off we go.
-            Imgur::setOAuth($oauth_pecl);
-        }
-        $account = new Imgur_Account();
-        print_r($account);
-        echo "</pre>";
-    }
-// State = ?: wat
-    else {
-        echo "Whoa, your OAuth state is totally bogus, dude.";
-        exit;
-    }
-
+// Let's pick a random image.
+    $random_image_hash = array_rand($il->getArrayCopy(), 1);
+    $ai = new Imgur_AccountImage($random_image_hash);
+    printf(
+        '<hr>Picked random image to grab from the account: <a href="%s">%s</a>, %dx%d, %d bytes at %s; Delete Hash %s<br>',
+        $ai->link_imgur_page,
+        $ai->hash,
+        $ai->width,
+        $ai->height,
+        $ai->size,
+        $ai->datetime->format('Y-m-d H:i:s'),
+        $ai->deletehash
+    );

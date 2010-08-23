@@ -99,8 +99,11 @@ class Imgur {
     public static function setOAuth($oauth) {
     // We support the following adapters officially:
     // PEAR's HTTP_OAuth_Consumer
-    // Zend's Zend_Oauth_Token_Access (*NOT* a Zend_Oauth_Consumer!)
+    // Zend's Zend_Oauth_Consumer
     // The PECL extension "OAuth"
+    // For all other objects, we'll strip underscores.
+    // Let's say we have a custom OAuth class called My_Super_OAuth_Thing
+    // We'll then look for "Imgur_HTTPAdapter_OAuth_MySuperOAuthThing"
         $adapter_class = '';
         if(extension_loaded('oauth') && $oauth instanceof OAuth)
             $adapter_class = 'PECLOAuth';
